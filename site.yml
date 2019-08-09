@@ -1,0 +1,21 @@
+---
+- hosts: saleor
+  become: yes
+  vars_files:
+    - vars/main.yml
+  
+  pre_tasks:
+    - name: Install python library
+      yum:
+       name: python-psycopg2
+       state: present
+    
+    - name: Install EPEL repository
+      yum: 
+        name: epel-release 
+        state: present
+
+  roles:
+    - postgresql
+    - saleor
+    - nginx

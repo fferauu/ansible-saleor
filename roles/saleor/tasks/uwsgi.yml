@@ -1,0 +1,30 @@
+---
+- name: Create log directory for uwsgi
+  file:
+    path: /var/log/uwsgi
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: 0750
+  
+- name: Create log file for uwsgi
+  file:
+    path: /var/log/uwsgi/saleor.log
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    state: touch
+    mode: 0640
+
+- name: Copy systemd service file for uwsgi
+  template:
+    src: templates/saleor.service.j2
+    dest: /etc/systemd/system/saleor.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable uwsgi to start at boot
+  service:
+    name: saleor
+    enabled: yes
+    state: started

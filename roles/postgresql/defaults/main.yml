@@ -1,0 +1,9 @@
+---
+postgresql_users: 
+  - name: saleor
+    password: saleor
+    role_attr_flags: "SUPERUSER,LOGIN"
+
+postgresql_databases: 
+  - name: saleor
+    owner: saleor

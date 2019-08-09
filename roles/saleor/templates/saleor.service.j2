@@ -1,0 +1,12 @@
+[Unit]
+Description="uWSGI server for saleor"
+After=network.target
+
+[Service]
+User={{ app_user }}
+WorkingDirectory={{ app_directory }}
+ExecStart={{ app_directory }}/bin/uwsgi --socket=127.0.0.1:9000 --ini {{ app_directory }}/saleor/wsgi/uwsgi.ini
+
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,61 @@
+---
+- name: Install python36 packages and dependencies
+  yum:
+    name:
+      - redhat-rpm-config
+      - python36
+      - python36-devel
+      - python36-pip
+      - python36-cffi
+      - libffi-devel
+      - cairo
+      - pango
+      - gdk-pixbuf2
+      - gcc
+      - gcc-c++
+      - make
+      - git
+      - python-virtualenv
+      - python-psycopg2
+    state: installed
+
+- name: Clone saleor git repo
+  git:
+    repo: https://github.com/mirumee/saleor.git
+    dest: "{{ app_directory }}"
+    force: yes
+
+- name: Change app directory owner
+  file:
+    path: "{{ app_directory }}"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    recurse: yes
+
+- name: Install requirements
+  pip:
+    requirements: requirements.txt
+    virtualenv: "{{ app_directory }}"
+    virtualenv_python: python3
+    chdir: "{{ app_directory }}"
+    extra_args: --no-cache
+  tags: requirements
+  become_user: "{{ app_user }}"
+
+
+- name: Set SECRET_KEY in settings.py
+  lineinfile:
+    path: "{{ app_directory }}/saleor/settings.py"
+    regexp: '^SECRET_KEY ='
+    line: "SECRET_KEY = \"{{ SECRET_KEY }}\""
+
+- name: Add app url to ALLOWED_HOSTS in settings.py
+  lineinfile:
+    path: "{{ app_directory }}/saleor/settings.py"
+    regexp: '^ALLOWED_HOSTS ='
+    line: 'ALLOWED_HOSTS = get_list(os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,centos2.home.lab"))'
+
+- name: Prepare database
+  shell: source bin/activate && python manage.py migrate
+  args:
+    chdir: "{{ app_directory }}"

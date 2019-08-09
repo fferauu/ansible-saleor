@@ -1,0 +1,19 @@
+---
+- name: Add Node.js 10.x repo
+  shell: curl -sL https://rpm.nodesource.com/setup_10.x | bash -
+
+- name: Install Node.js
+  yum:
+    name: nodejs
+    state: installed
+
+- name: Install Node.js packages
+  npm:
+    path: "{{ app_directory }}"
+  become_user: "{{ app_user }}"
+
+- name: Built Node.js
+  command: npm run build-assets
+  args:
+    chdir: "{{ app_directory }}"
+  become_user: "{{ app_user }}"

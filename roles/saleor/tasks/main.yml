@@ -1,0 +1,4 @@
+---
+- include_tasks: app.yml
+- include_tasks: nodejs.yml
+- include_tasks: uwsgi.yml

@@ -1,0 +1,48 @@
+---
+- name: Add PostgreSQL repo
+  yum:
+    name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+    state: installed
+
+- name: Install PostgreSQL packages
+  yum:
+    name:
+      - postgresql94
+      - postgresql94-server
+      - postgresql94-contrib
+    state: installed
+
+- name: Initialize database
+  command: /usr/pgsql-9.4/bin/postgresql94-setup initdb
+  args:
+    creates: /var/lib/pgsql/9.4/data/pg_hba.conf
+
+- name: Copy pg_hba config file
+  copy:
+    src: files/pg_hba.conf
+    dest: /var/lib/pgsql/9.4/data/pg_hba.conf
+    owner: postgres
+    group: postgres
+    mode: 0600
+
+- name: Start PostgreSQL
+  service:
+    name: postgresql-9.4
+    state: started
+    enabled: yes
+
+- name: Create postgres users
+  postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    role_attr_flags: "{{ item.role_attr_flags }}"
+  with_items: "{{ postgresql_users }}"
+  become_user: postgres
+
+- name: Create postgres databases
+  postgresql_db:
+    name: "{{ item.name }}"
+    owner: "{{ item.owner }}"
+  with_items: "{{ postgresql_databases }}"
+  become_user: postgres
+
